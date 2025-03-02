@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homework Tracker</title>
+    <script type="text/javascript" src="https://cdn.emailjs.com/dist/email.min.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        header {
+            background: #35424a;
+            color: #ffffff;
+            padding: 20px;
+            text-align: center;
+        }
+        nav {
+            margin: 20px 0;
+            text-align: center;
+        }
+        nav a {
+            margin: 0 15px;
+            text-decoration: none;
+            color: #35424a;
+            font-weight: bold;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            color: #35424a;
+        }
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            padding: 10px 0;
+            background: #35424a;
+            color: #ffffff;
+        }
+        button {
+            background-color: #5cb85c;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #4cae4c;
+        }
+        input[type="text"], input[type="date"], input[type="email"], input[type="password"], textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .assignment-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .assignment-list li {
+            background: #e9ecef;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .profile-icon {
+            float: right;
+            margin-right: 20px;
+            font-size: 24px;
+            color: #ffffff;
+            cursor: pointer;
+        }
+        .profile-details {
+            display: none;
+            position: absolute;
+            right: 20px;
+            top: 70px;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        .black-text {
+            color: black; /* เปลี่ยนสีข้อความเป็นสีดำ */
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>ระบบจัดการตารางเรียนและแจ้งเตือนการบ้าน</h1>
+        <div class="profile-icon" id="profileIcon" style="display: none;" onclick="toggleProfileDetails()">👤</div>
+        <div class="profile-details" id="profileDetails">
+            <p id="profileName"></p>
+            <p id="profileEmail"></p>
+        </div>
+    </header>
+    <nav>
+        <a href="#home" id="homeLink">หน้าแรก</a>
+        <a href="#dashboard" id="dashboardLink" style="display: none;">Dashboard</a>
+        <a href="#add_homework" id="addHomeworkLink" style="display: none;">เพิ่มการบ้าน</a>
+        <a href="#add_schedule" id="addScheduleLink" style="display: none;">เพิ่มตารางเรียน</a>
+        <a href="#all_assignments" id="allAssignmentsLink" style="display: none;">การบ้านและตารางเรียนทั้งหมด</a>
+        <a href="#signup" id="signupLink">สมัครสมาชิก</a>
+        <a href="#login" id="loginLink">เข้าสู่ระบบ</a>
+    </nav>
+    <div class="container" id="home">
+        <h2>ยินดีต้อนรับสู่ระบบ Homework Tracker</h2>
+        <p>ระบบนี้ช่วยให้นักเรียนสามารถจัดการตารางเรียนและการบ้านได้อย่างมีประสิทธิภาพ</p>
+        <button onclick="showSignup()">สมัครสมาชิก</button>
+        <button onclick="showLogin()">เข้าสู่ระบบ</button>
+    </div>
+    <div class="container" id="signup" style="display: none;">
+        <h2>สมัครสมาชิก</h2>
+        <form onsubmit="handleSignup(); return false;">
+            <label for="username">ชื่อผู้ใช้:</label>
+            <input type="text" id="username" name="username" required>
+            <label for="email">อีเมล:</label>
+            <input type="email" id="email" name="email" required>
+            <label for="password">รหัสผ่าน:</label>
+            <input type="password" id="password" name="password" required>
+            <button type="button" onclick="togglePassword('password')">ดูรหัสผ่าน</button>
+            <button type="submit">สมัครสมาชิก</button>
+        </form>
+        <button onclick="hideSignup()">กลับไปที่หน้าแรก</button>
+    </div>
+    <div class="container" id="login" style="display: none;">
+        <h2>เข้าสู่ระบบ</h2>
+        <form onsubmit="handleLogin(); return false;">
+            <label for="loginUsername">ชื่อผู้ใช้:</label>
+            <input type="text" id="loginUsername" name="loginUsername" required>
+            <label for="loginPassword">รหัสผ่าน:</label>
+            <input type="password" id="loginPassword" name="loginPassword" required>
+            <button type="button" onclick="togglePassword('loginPassword')">ดูรหัสผ่าน</button>
+            <button type="submit">เข้าสู่ระบบ</button>
+        </form>
+        <button onclick="hideLogin()">กลับไปที่หน้าแรก</button>
+    </div>
+    <div class="container" id="dashboard" style="display: none;">
+        <h2>Dashboard</h2>
+        <h3>ตารางเรียนวันนี้</h3>
+        <p>แสดงตารางเรียนในวันนี้</p>
+        <h3>การบ้านที่ต้องส่งเร็ว ๆ นี้</h3>
+        <p>แสดงการบ้านที่ใกล้ถึงกำหนดส่ง</p>
+        <button onclick="showAddHomework()">เพิ่มการบ้าน</button>
+        <button onclick="showAddSchedule()">เพิ่มตารางเรียน</button>
+        <h3>การบ้านที่บันทึกไว้</h3>
+        <ul class="assignment-list" id="homeworkList"></ul>
+        <h3>ตารางเรียนที่บันทึกไว้</h3>
+        <ul class="assignment-list" id="scheduleList"></ul>
+    </div>
+    <div class="container" id="add_homework" style="display: none;">
+        <h2>เพิ่มการบ้าน</h2>
+        <form onsubmit="addHomework(); return false;">
+            <label for="subject">ชื่อวิชา:</label>
+            <input type="text" id="subject" name="subject" required>
+            <label for="details">รายละเอียดการบ้าน:</label>
+            <textarea id="details" name="details" required></textarea>
+            <label for="due_date">วันส่ง:</label>
+            <input type="date" id="due_date" name="due_date" required onchange="showEmailField()">
+            <div id="emailField" style="display:none;">
+                <label for="notificationEmail">อีเมลสำหรับแจ้งเตือน:</label>
+                <input type="email" id="notificationEmail" name="notificationEmail" required>
+            </div>
+            <button type="submit">บันทึกการบ้าน</button>
+        </form>
+        <button onclick="showDashboard()">กลับไปที่ Dashboard</button>
+    </div>
+    <div class="container" id="add_schedule" style="display: none;">
+        <h2>เพิ่มตารางเรียน</h2>
+        <form onsubmit="addSchedule(); return false;">
+            <label for="subject_schedule">ชื่อวิชา:</label>
+            <input type="text" id="subject_schedule" name="subject_schedule" required>
+            <label for="time">เวลา (เริ่ม-จบ):</label>
+            <input type="text" id="time" name="time" placeholder="08:00 - 09:30" required>
+            <label for="classroom">ห้องเรียน:</label>
+            <input type="text" id="classroom" name="classroom" required>
+            <label for="teacher">อาจารย์ผู้สอน:</label>
+            <input type="text" id="teacher" name="teacher" required>
+            <div id="emailFieldSchedule" style="display:none;">
+                <label for="notificationEmailSchedule">อีเมลสำหรับแจ้งเตือน:</label>
+                <input type="email" id="notificationEmailSchedule" name="notificationEmailSchedule" required>
+            </div>
+            <button type="submit">บันทึกตารางเรียน</button>
+        </form>
+        <button onclick="showDashboard()">กลับไปที่ Dashboard</button>
+    </div>
+    <footer>
+        <p>&copy; 2025 Homework Tracker</p>
+    </footer>
+    <script>
+        // เริ่มต้น EmailJS
+        (function(){
+            emailjs.init("YOUR_USER_ID"); // แทนที่ด้วย User ID ของคุณ
+        })();
+
+        let homeworkAssignments = JSON.parse(localStorage.getItem('homeworkAssignments')) || [];
+        let scheduleAssignments = JSON.parse(localStorage.getItem('scheduleAssignments')) || [];
+        let currentUser = {};
+
+        function showSignup() {
+            hideAll();
+            document.getElementById("signup").style.display = "block";
+        }
+
+        function hideSignup() {
+            document.getElementById("signup").style.display = "none";
+            document.getElementById("home").style.display = "block";
+        }
+
+        function showLogin() {
+            hideAll();
+            document.getElementById("login").style.display = "block";
+        }
+
+        function hideLogin() {
+            document.getElementById("login").style.display = "none";
+            document.getElementById("home").style.display = "block";
+        }
+
+        function showDashboard() {
+            hideAll();
+            document.getElementById("dashboard").style.display = "block";
+            document.getElementById("dashboardLink").style.display = "inline";
+            document.getElementById("allAssignmentsLink").style.display = "inline";
+            document.getElementById("profileIcon").style.display = "inline"; // แสดงไอคอนโปรไฟล์
+            displayAssignments(); // แสดงการบ้านและตารางเรียนใน Dashboard
+        }
+
+        function showAddHomework() {
+            hideAll();
+            document.getElementById("add_homework").style.display = "block";
+        }
+
+        function showAddSchedule() {
+            hideAll();
+            document.getElementById("add_schedule").style.display = "block";
+        }
+
+        function hideAll() {
+            document.getElementById("home").style.display = "none";
+            document.getElementById("signup").style.display = "none";
+            document.getElementById("login").style.display = "none";
+            document.getElementById("dashboard").style.display = "none";
+            document.getElementById("add_homework").style.display = "none";
+            document.getElementById("add_schedule").style.display = "none";
+            document.getElementById("dashboardLink").style.display = "none";
+            document.getElementById("allAssignmentsLink").style.display = "none";
+            document.getElementById("profileIcon").style.display = "none"; // ซ่อนไอคอนโปรไฟล์
+            document.getElementById("profileDetails").style.display = "none"; // ซ่อนรายละเอียดโปรไฟล์
+        }
+
+        function toggleProfileDetails() {
+            const profileDetails = document.getElementById("profileDetails");
+            profileDetails.style.display = profileDetails.style.display === "block" ? "none" : "block";
+            // เปลี่ยนสีข้อความเมื่อคลิกที่ไอคอน
+            const profileIcon = document.getElementById("profileIcon");
+            profileIcon.classList.toggle("black-text");
+        }
+
+        function handleSignup() {
+            currentUser.username = document.getElementById("username").value;
+            currentUser.email = document.getElementById("email").value;
+            localStorage.setItem('currentUser', JSON.stringify(currentUser)); // บันทึกข้อมูลผู้ใช้
+            alert('สมัครสมาชิกสำเร็จ');
+            hideSignup();
+            showDashboard();
+            updateProfileDetails(); // อัปเดตข้อมูลโปรไฟล์หลังสมัครสมาชิก
+        }
+
+        function handleLogin() {
+            currentUser.username = document.getElementById("loginUsername").value;
+            currentUser.email = document.getElementById("email").value; // สมมติว่าใช้ email เดิม
+            localStorage.setItem('currentUser', JSON.stringify(currentUser)); // บันทึกข้อมูลผู้ใช้
+            alert('เข้าสู่ระบบสำเร็จ');
+            hideLogin();
+            showDashboard();
+            updateProfileDetails(); // อัปเดตข้อมูลโปรไฟล์หลังเข้าสู่ระบบ
+        }
+
+        function updateProfileDetails() {
+            document.getElementById("profileName").textContent = `ชื่อผู้ใช้: ${currentUser.username}`;
+            document.getElementById("profileEmail").textContent = `อีเมล: ${currentUser.email}`;
+            document.getElementById("profileIcon").style.display = "inline"; // แสดงไอคอนโปรไฟล์
+        }
+
+        function addHomework() {
+            const subject = document.getElementById("subject").value;
+            const details = document.getElementById("details").value;
+            const dueDate = document.getElementById("due_date").value;
+            const notificationEmail = document.getElementById("notificationEmail").value;
+
+            const newAssignment = { subject, details, dueDate, notificationEmail };
+            homeworkAssignments.push(newAssignment);
+            localStorage.setItem('homeworkAssignments', JSON.stringify(homeworkAssignments)); // บันทึกข้อมูลลง localStorage
+
+            // ส่งอีเมล
+            emailjs.send("YOUR_SERVICE_ID", "YOUR_TEMPLATE_ID", {
+                subject: subject,
+                details: details,
+                dueDate: dueDate,
+                to_email: notificationEmail
+            })
+            .then(() => {
+                alert(`แจ้งเตือน: การบ้าน "${subject}" ได้ถูกบันทึกแล้วและส่งไปยัง ${notificationEmail}`);
+            })
+            .catch((error) => {
+                console.error("ส่งอีเมลล้มเหลว:", error);
+            });
+
+            showDashboard(); // แสดง Dashboard ทันทีหลังบันทึก
+        }
+
+        function addSchedule() {
+            const subjectSchedule = document.getElementById("subject_schedule").value;
+            const time = document.getElementById("time").value;
+            const classroom = document.getElementById("classroom").value;
+            const teacher = document.getElementById("teacher").value;
+            const notificationEmailSchedule = document.getElementById("notificationEmailSchedule").value;
+
+            const newSchedule = { subject: subjectSchedule, time, classroom, teacher };
+            scheduleAssignments.push(newSchedule);
+            localStorage.setItem('scheduleAssignments', JSON.stringify(scheduleAssignments)); // บันทึกข้อมูลลง localStorage
+
+            // ส่งอีเมล
+            emailjs.send("YOUR_SERVICE_ID", "YOUR_TEMPLATE_ID", {
+                subject: subjectSchedule,
+                time: time,
+                classroom: classroom,
+                teacher: teacher,
+                to_email: notificationEmailSchedule
+            })
+            .then(() => {
+                alert(`แจ้งเตือน: ตารางเรียน "${subjectSchedule}" ได้ถูกบันทึกแล้วและส่งไปยัง ${notificationEmailSchedule}`);
+            })
+            .catch((error) => {
+                console.error("ส่งอีเมลล้มเหลว:", error);
+            });
+
+            showDashboard(); // แสดง Dashboard ทันทีหลังบันทึก
+        }
+
+        function displayAssignments() {
+            const homeworkList = document.getElementById("homeworkList");
+            const scheduleList = document.getElementById("scheduleList");
+            homeworkList.innerHTML = ""; // ล้างรายการการบ้านก่อนหน้า
+            scheduleList.innerHTML = ""; // ล้างรายการตารางเรียนก่อนหน้า
+
+            homeworkAssignments.forEach(assignment => {
+                const listItem = document.createElement("li");
+                listItem.textContent = `${assignment.subject} - ${assignment.details} (วันส่ง: ${assignment.dueDate}, อีเมลแจ้งเตือน: ${assignment.notificationEmail})`;
+                homeworkList.appendChild(listItem);
+            });
+
+            scheduleAssignments.forEach(assignment => {
+                const listItem = document.createElement("li");
+                listItem.textContent = `${assignment.subject} - เวลา: ${assignment.time}, ห้อง: ${assignment.classroom}, อาจารย์: ${assignment.teacher}`;
+                scheduleList.appendChild(listItem);
+            });
+        }
+
+        function showEmailField() {
+            document.getElementById("emailField").style.display = "block"; // แสดงฟิลด์อีเมลเมื่อเลือกวันส่ง
+        }
+
+        function showEmailFieldSchedule() {
+            document.getElementById("emailFieldSchedule").style.display = "block"; // แสดงฟิลด์อีเมลเมื่อเลือกวันส่ง
+        }
+
+        function togglePassword(passwordFieldId) {
+            const passwordField = document.getElementById(passwordFieldId);
+            passwordField.type = passwordField.type === 'password' ? 'text' : 'password';
+        }
+
+        // เรียกใช้ฟังก์ชันแสดงรายการเมื่อโหลดหน้า
